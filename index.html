@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AGRISHIELD AI | Farmer Crop Clinic</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+
+    <!-- Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        <div class="logo">🛡️</div>
+
+        <div>
+            <h1>AGRISHIELD AI</h1>
+            <p>Smart Crop Health Assistant</p>
+        </div>
+    </div>
+
+    <div id="aiStatus" class="status offline">
+        <span></span>
+        AI MODEL LOADING
+    </div>
+</header>
+
+
+<main class="container">
+
+    <!-- HERO -->
+
+    <section class="hero">
+        <div class="hero-icon">🌱</div>
+
+        <h2>Protect Your Crop With AI</h2>
+
+        <p>
+            Upload a clear photo of a crop leaf.
+            AGRISHIELD checks whether the image contains a plant,
+            identifies the crop and disease when supported by the
+            trained model, and provides practical crop-care guidance.
+        </p>
+    </section>
+
+
+    <!-- UPLOAD -->
+
+    <section class="upload-card">
+
+        <div id="uploadArea" class="upload-area">
+
+            <div class="camera-icon">
+                <i class="fa-solid fa-camera"></i>
+            </div>
+
+            <h3>Upload Crop Leaf</h3>
+
+            <p>
+                Take a clear photo of the affected leaf
+            </p>
+
+            <label for="imageInput" class="upload-button">
+                <i class="fa-solid fa-image"></i>
+                Choose Leaf Image
+            </label>
+
+            <input
+                id="imageInput"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+            >
+
+            <div class="tips">
+                <span>✓ Good lighting</span>
+                <span>✓ Leaf clearly visible</span>
+                <span>✓ Avoid blurry images</span>
+            </div>
+
+        </div>
+
+
+        <!-- PREVIEW -->
+
+        <div id="previewArea" class="preview-area hidden">
+
+            <img id="previewImage" alt="Crop preview">
+
+            <div id="scanStatus" class="scan-status">
+                <div class="loader"></div>
+
+                <div>
+                    <strong id="scanTitle">
+                        Analyzing image...
+                    </strong>
+
+                    <p id="scanMessage">
+                        Please wait.
+                    </p>
+                </div>
+            </div>
+
+            <button id="analyzeButton" class="analyze-button">
+                <i class="fa-solid fa-brain"></i>
+                Analyze Crop
+            </button>
+
+            <button id="resetButton" class="reset-button">
+                Upload Another Image
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- PROCESS -->
+
+    <section id="processSection" class="process hidden">
+
+        <div class="process-step active">
+            <div>1</div>
+            <span>Image Check</span>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="process-step">
+            <div>2</div>
+            <span>Crop Detection</span>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="process-step">
+            <div>3</div>
+            <span>Disease Analysis</span>
+        </div>
+
+        <div class="line"></div>
+
+        <div class="process-step">
+            <div>4</div>
+            <span>Farmer Guidance</span>
+        </div>
+
+    </section>
+
+
+    <!-- REJECTION -->
+
+    <section id="rejectionCard" class="result-card rejection hidden">
+
+        <div class="result-icon">⚠️</div>
+
+        <h2>Crop Leaf Not Confirmed</h2>
+
+        <p id="rejectionText"></p>
+
+        <button class="reset-button" onclick="resetApp()">
+            Try Another Image
+        </button>
+
+    </section>
+
+
+    <!-- DIAGNOSIS -->
+
+    <section id="resultCard" class="result-card hidden">
+
+        <div class="result-header">
+
+            <div>
+                <span class="small-label">
+                    AI CROP HEALTH REPORT
+                </span>
+
+                <h2 id="cropName">
+                    Crop
+                </h2>
+
+                <p id="diseaseName">
+                    Disease
+                </p>
+            </div>
+
+            <div id="riskBadge" class="risk-badge">
+                UNKNOWN
+            </div>
+
+        </div>
+
+
+        <!-- CONFIDENCE -->
+
+        <div class="confidence-box">
+
+            <div class="confidence-top">
+                <span>AI Confidence</span>
+
+                <strong id="confidenceValue">
+                    --
+                </strong>
+            </div>
+
+            <div class="confidence-bar">
+                <div id="confidenceFill"></div>
+            </div>
+
+            <p id="confidenceMessage">
+                Prediction confidence will appear here.
+            </p>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="grid">
+
+            <div class="info-card">
+                <div class="info-icon">🔬</div>
+
+                <h3>Detected Symptoms</h3>
+
+                <p id="symptoms"></p>
+            </div>
+
+
+            <div class="info-card">
+                <div class="info-icon">⚠️</div>
+
+                <h3>Risk Factor</h3>
+
+                <p id="riskFactor"></p>
+            </div>
+
+        </div>
+
+
+        <!-- TREATMENT -->
+
+        <div class="section-card">
+
+            <div class="section-title">
+                <span>💊</span>
+                <div>
+                    <h3>Recommended Crop Management</h3>
+                    <p>Follow approved product labels and local agricultural guidance.</p>
+                </div>
+            </div>
+
+            <div id="treatmentList"></div>
+
+        </div>
+
+
+        <!-- ORGANIC -->
+
+        <div class="section-card organic">
+
+            <div class="section-title">
+                <span>🌿</span>
+
+                <div>
+                    <h3>Organic / Biological Management</h3>
+                    <p>Lower-impact management options</p>
+                </div>
+            </div>
+
+            <ul id="organicList"></ul>
+
+        </div>
+
+
+        <!-- PLANT NEEDS -->
+
+        <div class="section-card">
+
+            <div class="section-title">
+                <span>💧</span>
+
+                <div>
+                    <h3>What Your Plant Needs</h3>
+                    <p>General crop-care requirements</p>
+                </div>
+            </div>
+
+            <div class="needs-grid">
+
+                <div>
+                    <strong>💧 Water</strong>
+                    <span id="waterNeed"></span>
+                </div>
+
+                <div>
+                    <strong>☀️ Light</strong>
+                    <span id="lightNeed"></span>
+                </div>
+
+                <div>
+                    <strong>🌱 Nutrition</strong>
+                    <span id="nutritionNeed"></span>
+                </div>
+
+                <div>
+                    <strong>🌬️ Airflow</strong>
+                    <span id="airNeed"></span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PREVENTION -->
+
+        <div class="section-card prevention">
+
+            <div class="section-title">
+                <span>🛡️</span>
+
+                <div>
+                    <h3>Prevention</h3>
+                    <p>Reduce the chance of recurrence</p>
+                </div>
+            </div>
+
+            <ul id="preventionList"></ul>
+
+        </div>
+
+
+        <!-- VOICE -->
+
+        <div class="actions">
+
+            <button onclick="speakReport()" class="action-button">
+                🔊 Read Report
+            </button>
+
+            <button onclick="printReport()" class="action-button">
+                🖨️ Print Report
+            </button>
+
+            <button onclick="resetApp()" class="action-button secondary">
+                🔄 New Scan
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- DEMO -->
+
+    <section class="demo-card">
+
+        <div>
+            <span class="small-label">JUDGE DEMO</span>
+
+            <h3>Test AGRISHIELD</h3>
+
+            <p>
+                Use demo cases to demonstrate the reporting system.
+            </p>
+        </div>
+
+        <div class="demo-buttons">
+
+            <button onclick="runDemo('healthy')">
+                🌿 Healthy
+            </button>
+
+            <button onclick="runDemo('tomato')">
+                🍅 Tomato Disease
+            </button>
+
+            <button onclick="runDemo('maize')">
+                🌽 Maize Disease
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    <strong>AGRISHIELD AI</strong>
+
+    <p>
+        AI-assisted crop health screening • Prototype
+    </p>
+
+    <small>
+        AI predictions should be verified by an agricultural expert
+        before applying chemicals.
+    </small>
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
